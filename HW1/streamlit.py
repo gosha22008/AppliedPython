@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from functions import get_current_temp, is_normal
-import asyncio
 import matplotlib.pyplot as plt
 import seaborn as sbn
 

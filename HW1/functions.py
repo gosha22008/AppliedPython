@@ -1,6 +1,4 @@
 import requests
-import asyncio
-import aiohttp
 
 
 URL="https://api.openweathermap.org/data/2.5/weather" # адрес запроса
