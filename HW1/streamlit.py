@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
-from functions import get_current_temp
-import requests
-
+from functions import get_current_temp, is_normal
+import asyncio
+import matplotlib.pyplot as plt
+import seaborn as sbn
 
 
 st.header("Приветствую в моём streamlit приложении! Начнём!")
@@ -31,6 +32,25 @@ if uploaded_file:
     st.write(f"Сезонные профили с указанием среднего и стандартного отклонения")
     st.dataframe(df[df["city"] == city].groupby(["season"])["temperature"].agg(["mean", "std"]))
 
+    # подготовка датасета для удобства
+    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    df["av_temp_season_city"] = df.groupby(["city", "season"])["temperature"].transform(lambda x: x.mean())
+    df["std_season_city"] = df.groupby(["season", "city"])["temperature"].transform(lambda x: x.std())
+    df["temp_up_limit"] = df["av_temp_season_city"] + 2 * df["std_season_city"]
+    df["temp_down_limit"] = df["av_temp_season_city"] - 2 * df["std_season_city"]
+    df["is_anomale"] = (df["temperature"] > df["temp_up_limit"] ) | (df["temperature"] < df["temp_down_limit"])
+
+    # Временной ряд температур с выделением аномалий (например, точками другого цвета).
+    plt.figure(figsize=(17,10))
+    sbn.lineplot(x=df[df["city"] == "London"]["timestamp"],
+                 y=df[df["city"] == "London"]["temperature"],
+                 label="Тумпература", color="green")
+    sbn.scatterplot(x=df[(df["city"] == "London") & (df["is_anomale"] == True)]["timestamp"],
+                    y=df[(df["city"] == "London") & (df["is_anomale"] == True)]["temperature"],
+                    label="Аномалии", color="red")
+    plt.title(f"Температура в {city}")
+    st.pyplot(plt)
+
     API_KEY = st.text_input("Введите ключ API")
     if API_KEY:
         try:
@@ -43,6 +63,12 @@ if uploaded_file:
                 st.success(body="Ключ получен")
                 current_temp = response.json()["main"]["temp"]
                 st.write(f"Текущая температура в {city} -- {current_temp}")
+
+                norm = is_normal(city_name=city, current_temp=current_temp, df=df)
+                if norm:
+                    st.success(body="Погода в пределах нормы")
+                else:
+                    st.warning(body="Внимание! Аномальная температура")
 
         except Exception as e:
             st.error(f"Что-то не так с API: {e}")

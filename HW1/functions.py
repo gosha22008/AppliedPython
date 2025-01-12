@@ -1,8 +1,9 @@
 import requests
+import asyncio
+import aiohttp
 
-# API_KEY = "da896315ea22ae56bf396661494f76de" # ВАШ ключ
+
 URL="https://api.openweathermap.org/data/2.5/weather" # адрес запроса
-
 
 def get_current_temp(city_name, API_KEY):
     '''
@@ -22,3 +23,18 @@ def get_current_temp(city_name, API_KEY):
 
     response = requests.get(url=URL, params=params)
     return response
+
+current_season = "winter"
+
+def is_normal(city_name, current_temp, df):
+    '''
+    Функция сравниет текущую температуру с порогами верхним и нижним,
+    и на основе этого возвращает либо True - температура нормальная,
+    либо False - температура аномальная
+    Параметры:
+        city_name - название города
+        current_temp - текущая температура
+    '''
+    limit_up = df[(df["city"] == city_name) & (df["season"] == current_season)]["temp_up_limit"].iloc[0] # верхний порог
+    limit_down = df[(df["city"] == city_name) & (df["season"] == current_season)]["temp_down_limit"].iloc[0] # нижний порог
+    return (current_temp < limit_up) or (current_temp > limit_down) #возвращает True если температура нормальная
