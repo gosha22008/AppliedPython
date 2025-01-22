@@ -72,7 +72,7 @@ async def profile_city(message: types.Message, state=FSMContext):
         cur_temp = await main_temp(city)
         await state.update_data(current_temp=cur_temp)
         await state.set_state(Profile.water_goal)
-        await message.answer(f"температура в вашем городе установлена автоматически")
+        await message.answer(f"температура в вашем городе установлена автоматически: {cur_temp}")
 
     except Exception as e:
         logging.info(f"В блоке city - except")
@@ -82,7 +82,7 @@ async def profile_city(message: types.Message, state=FSMContext):
     finally:
         logging.info(f"В блоке city water_goal")
         profile = await state.get_data()
-        await message.answer(f"{profile}")
+        # await message.answer(f"{profile}")
         water_cal = await get_water_cal(profile)
         await state.update_data(water_goal=water_cal)
         # await state.set_state(Profile.calorie_goal)
@@ -90,11 +90,11 @@ async def profile_city(message: types.Message, state=FSMContext):
 
         logging.info(f"В блоке city calorie_goal")
         profile = await state.get_data()
-        await message.answer(f"{profile}")
+        # await message.answer(f"{profile}")
         calorie_goal = await get_calorie_cal(profile)
         await state.update_data(calorie_goal=calorie_goal)
         await message.answer(f"Исходя из ваших параметров цель калорий посчитана автоматически: {calorie_goal} ккал")
-        await message.answer(f"Создание профиля завершено. Профиль- {profile}")
+        await message.answer(f"Создание профиля завершено.")
 
 
 @router_prof.message(Profile.current_temp)
@@ -254,42 +254,3 @@ async def check_progress(message: types.Message, state=FSMContext):
     await message.answer(f"     -- Потреблено: {log_cal} ккал из {goal_cal} ккал.")
     await message.answer(f"     -- Сожжено: {burned_calories} ккал")
     await message.answer(f"     -- Баланс: {max(goal_cal-log_cal-burned_calories, 0)} ккал.")
-
-
-
-
-
-
-
-# @router_prof.message(Profile.water_goal)
-# async def profile_water_goal(message: types.Message, state=FSMContext):
-#     logging.info(f"В блоке city water_goal")
-#     profile = await state.get_data()
-#     await message.answer(f"{profile}")
-#     water_cal = await get_water_cal(profile)
-#     await state.update_data(water_goal=water_cal)
-#     # await state.update_data(water_goal=message.text)
-#     await message.answer(f"цель по воде Успешно ")
-    
-
-    
-    
-# @router_prof.message(Profile.activity)
-# async def profile_activity(message: types.Message, state=FSMContext):
-#     await state.update_data(activity=message.text)
-#     await state.set_state(Profile.city)
-#     await message.answer("В каком городе вы находитесь?")
-
-
-
-
-# @router_log.message(Command("log_water"))
-# async def log_water(message: types.Message, state=FSMContext):
-#     await state.set_state(Profile.logged_water)
-#     await message.answer("Введите кол-во выпитой воды")
-    
-
-    # Хэндлер на команду /test2
-# @router_prof.message(Command(f"log_water {n_water}"))
-# async def cmd_test2(message: types.Message):
-#     await message.reply(f"log water, {n_water}")
