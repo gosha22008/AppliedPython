@@ -3,7 +3,7 @@ import os
 
 load_dotenv()
 
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv("TELEGRAM_TOKEN")
 
 API_WEATHER_KEY = os.getenv("API_WEATHER_KEY")
 

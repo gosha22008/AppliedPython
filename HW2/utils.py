@@ -20,6 +20,7 @@ async def async_get_temp(session, city):
     async with session.get(URL_WEATHER, params=params) as response:
         temp = await response.json()
         # print(temp["main"]["temp"], f" -- {city}")
+        logging.info(f"БЛОК ТЕМПЕРАТУРА {temp}")
         return temp["main"]["temp"]
 
 async def main_temp(city):

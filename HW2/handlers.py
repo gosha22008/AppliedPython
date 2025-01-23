@@ -26,37 +26,44 @@ async def is_profile(message, state):
 # Хэндлер на команду /start
 @router_prof.message(Command("start"))
 async def cmd_start(message: types.Message):
+    logging.info("Получено сообщение /start")
     name = message.from_user.first_name
     await message.answer(f"Hello!, my dear {name} {message.from_user.last_name if message.from_user.last_name else ""}!")
     await message.answer(f"{name}, нужно заполнить Ваш профиль, введите команду /set_profile")
 
 @router_prof.message(Command("set_profile"))
 async def start_profile(message: types.Message, state=FSMContext):
+    logging.info("Получено сообщение /set_profile")
     await state.set_state(Profile.age)
+    logging.info("Состояние: age")
     await message.answer("Введите ваш возраст")
 
 @router_prof.message(Profile.age)
 async def profile_age(message: types.Message, state=FSMContext):
     await state.update_data(age=message.text)
     await state.set_state(Profile.weight)
+    logging.info("State: weight")
     await message.answer("Введите ваш вес (в кг)")
 
 @router_prof.message(Profile.weight)
 async def profile_weight(message: types.Message, state=FSMContext):
     await state.update_data(weight=message.text)
     await state.set_state(Profile.height)
+    logging.info("State: height")
     await message.answer("Введите ваш рост (в см)")
 
 @router_prof.message(Profile.height)
 async def profile_height(message: types.Message, state=FSMContext):
     await state.update_data(height=message.text)
     await state.set_state(Profile.activity)
+    logging.info("State: activity")
     await message.answer("Сколько минут активности у вас в день?")
 
 @router_prof.message(Profile.activity)
 async def profile_activity(message: types.Message, state=FSMContext):
     await state.update_data(activity=message.text)
     await state.set_state(Profile.city)
+    logging.info("State: city")
     await message.answer("В каком городе вы находитесь?")
 
 @router_prof.message(Profile.city)
@@ -64,7 +71,6 @@ async def profile_city(message: types.Message, state=FSMContext):
     logging.info(f"В блоке city")
     await state.update_data(city=message.text)
     logging.info(f"В блоке city - temp")
-    # await state.set_state(Profile.current_temp)
     city = await state.get_data()
     city = city.get("city")
     try:
@@ -85,7 +91,6 @@ async def profile_city(message: types.Message, state=FSMContext):
         # await message.answer(f"{profile}")
         water_cal = await get_water_cal(profile)
         await state.update_data(water_goal=water_cal)
-        # await state.set_state(Profile.calorie_goal)
         await message.answer(f"Исходя из ваших параметров цель воды посчитана автоматически: {water_cal} мл")
 
         logging.info(f"В блоке city calorie_goal")
@@ -94,14 +99,15 @@ async def profile_city(message: types.Message, state=FSMContext):
         calorie_goal = await get_calorie_cal(profile)
         await state.update_data(calorie_goal=calorie_goal)
         await message.answer(f"Исходя из ваших параметров цель калорий посчитана автоматически: {calorie_goal} ккал")
-        await message.answer(f"Создание профиля завершено.")
+        await message.answer(f"Создание профиля завершено. Профиль: ")
+        for k, v in profile.items():
+            await message.answer(f"{k}: {v}")
 
 
 @router_prof.message(Profile.current_temp)
 async def profile_current_temp(message: types.Message, state=FSMContext):
     logging.info(f"В блоке current_temp")
     await state.update_data(current_temp=message.text)
-    # await state.set_state(Profile.water_goal)
     await message.answer(f"Температура установлена")
 
 
@@ -175,9 +181,6 @@ async def log_food_handler(message: types.Message, state=FSMContext):
         current_calories = int(DATA.get("logged_calories", 0))
         current_calories += int(resp)
         await state.update_data(logged_calories1=current_calories, logged_calories2=current_calories)
-        # DATA.update(logged_calories1=current_calories, logged_calories2=current_calories)
-        # DATA["product_history"] = []
-        # DATA["product_history"].append(product)
         calorie_goal = int(DATA.get("calorie_goal", 0))
         await message.answer(f"Осталось съесть: {max(calorie_goal - current_calories, 0)} ккал")
 
@@ -254,3 +257,42 @@ async def check_progress(message: types.Message, state=FSMContext):
     await message.answer(f"     -- Потреблено: {log_cal} ккал из {goal_cal} ккал.")
     await message.answer(f"     -- Сожжено: {burned_calories} ккал")
     await message.answer(f"     -- Баланс: {max(goal_cal-log_cal-burned_calories, 0)} ккал.")
+
+
+
+
+
+
+
+# @router_prof.message(Profile.water_goal)
+# async def profile_water_goal(message: types.Message, state=FSMContext):
+#     logging.info(f"В блоке city water_goal")
+#     profile = await state.get_data()
+#     await message.answer(f"{profile}")
+#     water_cal = await get_water_cal(profile)
+#     await state.update_data(water_goal=water_cal)
+#     # await state.update_data(water_goal=message.text)
+#     await message.answer(f"цель по воде Успешно ")
+    
+
+    
+    
+# @router_prof.message(Profile.activity)
+# async def profile_activity(message: types.Message, state=FSMContext):
+#     await state.update_data(activity=message.text)
+#     await state.set_state(Profile.city)
+#     await message.answer("В каком городе вы находитесь?")
+
+
+
+
+# @router_log.message(Command("log_water"))
+# async def log_water(message: types.Message, state=FSMContext):
+#     await state.set_state(Profile.logged_water)
+#     await message.answer("Введите кол-во выпитой воды")
+    
+
+    # Хэндлер на команду /test2
+# @router_prof.message(Command(f"log_water {n_water}"))
+# async def cmd_test2(message: types.Message):
+#     await message.reply(f"log water, {n_water}")

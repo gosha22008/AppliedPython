@@ -23,4 +23,6 @@ async def main():
 
 
 if __name__ == "__main__":
+    logging.info(f"Бот запущен!")
     asyncio.run(main())
+    
